@@ -11,10 +11,12 @@ function Main() {
   const [pinCode, setPinCode] = useState("");
   const [date2Data, setDate2Data] = useState([]);
   const [date3Data, setDate3Data] = useState([]);
-  let flag1=false;
+  let flag1 = false;
+  const [flagSt, setFlagSt] = useState(false);
+  let capacity = "";
   //const [startDate, setstartDate] = useState([]);
-  const [dateArr,setDateArr]=useState([])
-  const [dumyArrState,setDumyArrState]=useState([])
+  const [dateArr, setDateArr] = useState([]);
+  const [dumyArrState, setDumyArrState] = useState([]);
   const monthNames = [
     "01",
     "02",
@@ -29,23 +31,23 @@ function Main() {
     "11",
     "12",
   ];
-  useEffect(()=>{
+  useEffect(() => {
     for (let i = 0; i < 3; i++) {
       var someDate = new Date();
       var numberOfDaysToAdd = i;
       var result = someDate.setDate(someDate.getDate() + numberOfDaysToAdd);
-     // console.log(someDate);
-      setDumyArrState(prev=>[...prev,someDate])
+      // console.log(someDate);
+      setDumyArrState((prev) => [...prev, someDate]);
       var month = monthNames[someDate.getMonth()];
       var day = String(someDate.getDate()).padStart(2, "0");
       var year = someDate.getFullYear();
       const output = day + "-" + month + "-" + year;
-     // console.log(output)
+      // console.log(output)
       // setDateArr([...dateArr,output])
-      setDateArr(prev=>[...prev,output])
+      setDateArr((prev) => [...prev, output]);
     }
-  },[])
-console.log(dateArr)
+  }, []);
+  console.log(dateArr);
   useEffect(() => {
     axios.get(`http://api.ngminds.com/states.json`).then((res) => {
       console.log(res);
@@ -66,7 +68,6 @@ console.log(dateArr)
     }
   };
 
-
   const handleClick = (e) => {
     //alert(e.target.value);
     axios.get(`http://api.ngminds.com/${e.target.value}.json`).then((res) => {
@@ -79,7 +80,6 @@ console.log(dateArr)
   });
   console.log(distAPI);
 
- 
   const setSlotByDistrict = () => {
     console.log(districtVal);
     axios
@@ -89,10 +89,26 @@ console.log(dateArr)
       .then((res) => {
         console.log(res.data);
         setCenterSlotData(res.data);
-      });  
-    }
-    const handlePinCode = () => {
-      axios
+      });
+    axios
+      .get(
+        `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtVal}&date=${dateArr[1]}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        setDate2Data(res.data);
+      });
+    axios
+      .get(
+        `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtVal}&date=${dateArr[2]}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        setDate3Data(res.data);
+      });
+  };
+  const handlePinCode = () => {
+    axios
       .get(
         `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=${pinCode}&date=${dateArr[0]}`
       )
@@ -100,19 +116,35 @@ console.log(dateArr)
         console.log(res.data);
         setCenterSlotData(res.data);
       });
-    };
-  useEffect(()=>{
+    axios
+      .get(
+        `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=${pinCode}&date=${dateArr[1]}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        setDate2Data(res.data);
+      });
+    axios
+      .get(
+        `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=${pinCode}&date=${dateArr[2]}`
+      )
+      .then((res) => {
+        console.log(res.data);
+        setDate3Data(res.data);
+      });
+  };
+  useEffect(() => {
     console.log(pinCode);
     console.log(dateArr[2]);
     if (districtVal != "") {
       axios
-      .get(
-        `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtVal}&date=${dateArr[0]}`
-      )
-      .then((res) => {
-        console.log(res.data);
-        setCenterSlotData(res.data);
-      });  
+        .get(
+          `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtVal}&date=${dateArr[0]}`
+        )
+        .then((res) => {
+          console.log(res.data);
+          setCenterSlotData(res.data);
+        });
       axios
         .get(
           `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${districtVal}&date=${dateArr[1]}`
@@ -131,19 +163,19 @@ console.log(dateArr)
         });
     } else if (pinCode != "") {
       axios
-      .get(
-        `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=${pinCode}&date=${dateArr[0]}`
-      )
-      .then((res) => {
-        console.log(res.data);
-        setCenterSlotData(res.data);
-      });
+        .get(
+          `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=${pinCode}&date=${dateArr[0]}`
+        )
+        .then((res) => {
+          console.log(res.data);
+          setCenterSlotData(res.data);
+        });
       axios
         .get(
           `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?pincode=${pinCode}&date=${dateArr[1]}`
         )
         .then((res) => {
-         // console.log(res.data);
+          // console.log(res.data);
           setDate2Data(res.data);
         });
       axios
@@ -155,43 +187,41 @@ console.log(dateArr)
           setDate3Data(res.data);
         });
     }
-  },[dateArr])
+  }, [dateArr]);
 
- 
   console.log(centerSlotData);
 
-let flag=false
+  let flag = false;
 
-const prevBtnhandler = () =>{
-  //console.log(dumyArrState[0])
-  let temp = [...dateArr]
-  var result = dumyArrState[0].setDate(dumyArrState[0].getDate() - 1);
-  console.log(dumyArrState[0])
-  var month = monthNames[dumyArrState[0].getMonth()];
-  var day = String(dumyArrState[0].getDate()).padStart(2, "0");
-  var year = dumyArrState[0].getFullYear();
-  const output = day + "-" + month + "-" + year;
+  const prevBtnhandler = () => {
+    //console.log(dumyArrState[0])
+    let temp = [...dateArr];
+    var result = dumyArrState[0].setDate(dumyArrState[0].getDate() - 1);
+    console.log(dumyArrState[0]);
+    var month = monthNames[dumyArrState[0].getMonth()];
+    var day = String(dumyArrState[0].getDate()).padStart(2, "0");
+    var year = dumyArrState[0].getFullYear();
+    const output = day + "-" + month + "-" + year;
 
-  temp.splice(2,1)
-   temp.unshift(output);
+    temp.splice(2, 1);
+    temp.unshift(output);
 
-   setDateArr(temp)
+    setDateArr(temp);
+  };
 
-}
-
-const NextBtnhandler = () =>{
-  let temp = [...dateArr]
-  var result = dumyArrState[2].setDate(dumyArrState[2].getDate() + 1);
-  var month = monthNames[dumyArrState[2].getMonth()];
-  var day = String(dumyArrState[2].getDate()).padStart(2, "0");
-  var year = dumyArrState[2].getFullYear();
-  const output = day + "-" + month + "-" + year;
-  temp.splice(0,1)
-   temp.push(output);
-   setDateArr(temp)
-}
-console.log(dateArr)
-   return (
+  const NextBtnhandler = () => {
+    let temp = [...dateArr];
+    var result = dumyArrState[2].setDate(dumyArrState[2].getDate() + 1);
+    var month = monthNames[dumyArrState[2].getMonth()];
+    var day = String(dumyArrState[2].getDate()).padStart(2, "0");
+    var year = dumyArrState[2].getFullYear();
+    const output = day + "-" + month + "-" + year;
+    temp.splice(0, 1);
+    temp.push(output);
+    setDateArr(temp);
+  };
+  console.log(centerSlotData);
+  return (
     <div>
       {isLoading && (
         <body>
@@ -238,7 +268,7 @@ console.log(dateArr)
                       <option value="">Select State</option>
                       {stateAPI &&
                         stateAPI.states.map((index) => {
-                          return (  
+                          return (
                             <option value={index.state_id}>
                               {index.state_name}
                             </option>
@@ -305,9 +335,8 @@ console.log(dateArr)
                     <button
                       href="javascript:;"
                       className="text-decoration-none text-secondary"
-                      style={{border:"none"}}
+                      style={{ border: "none" }}
                       onClick={prevBtnhandler}
-
                     >
                       <h2>&#x3008;</h2>
                     </button>
@@ -319,9 +348,7 @@ console.log(dateArr)
                         <div className="card my-2">
                           <div className="card-body py-1 my-1">
                             <strong>
-                              <small>
-                                {val}
-                              </small>
+                              <small>{val}</small>
                             </strong>
                           </div>
                         </div>
@@ -332,7 +359,7 @@ console.log(dateArr)
                   <div className="col-auto pt-2">
                     <button
                       className="text-decoration-none text-secondary"
-                      style={{border:"none"}}
+                      style={{ border: "none" }}
                       onClick={NextBtnhandler}
                     >
                       <h2>&#12297;</h2>
@@ -343,7 +370,8 @@ console.log(dateArr)
               <div className="card-body">
                 {centerSlotData.sessions &&
                   centerSlotData.sessions.map((index) => {
-                    // console.log(index.center_id);
+                    flag1 = false;
+                    capacity = 0;
                     return (
                       <div className="row py-3 border-bottom">
                         <div className="col-3">
@@ -358,8 +386,9 @@ console.log(dateArr)
                               <span className="badge bg-success">Free</span>
                             ) : (
                               <>
-                              <span className="badge bg-warning">paid</span>
-                              <span>Fee:{index.fee}</span></>
+                                <span className="badge bg-warning">paid</span>
+                                <span>Fee:{index.fee}</span>
+                              </>
                             )}
                           </div>
                           <small className="d-block">
@@ -374,17 +403,20 @@ console.log(dateArr)
                             <div className="card-body d-table">
                               <div className="d-table-cell h-100 align-middle text-center">
                                 {index.available_capacity == 0 ? (
-                                  <strong className="text-danger">Booked</strong>
+                                  <strong className="text-danger">
+                                    Booked
+                                  </strong>
                                 ) : (
                                   <>
-                                  {index.available_capacity > 10 ?
-                                  (
-                                  <strong className="text-success">
-                                    {index.available_capacity} Slots
-                                  </strong> 
-                                   ) : ( <strong className="text-warning">
-                                   {index.available_capacity} Slots
-                                 </strong>) }   
+                                    {index.available_capacity > 10 ? (
+                                      <strong className="text-success">
+                                        {index.available_capacity} Slots
+                                      </strong>
+                                    ) : (
+                                      <strong className="text-warning">
+                                        {index.available_capacity} Slots
+                                      </strong>
+                                    )}
                                   </>
                                 )}
                               </div>
@@ -395,43 +427,44 @@ console.log(dateArr)
                           <div className="card h-100">
                             <div className="card-body d-table">
                               <div className="d-table-cell h-100 align-middle text-center">
-                               
-                                   {
-                                   date2Data.sessions && date2Data.sessions.map((index2)=>{
-                                    return (
-                                      
-                                       index2.center_id === index.center_id ? 
-                                        (
-                                          index.available_capacity == 0 ? (
-                                            <>
-                                          {flag1=true }
-                                          <strong className="text-danger">Booked</strong>
-                                          </>
-                                        ) : (
-                                          <>
-                                          {index2.available_capacity > 10 ?
-                                          (
-                                            <>
-                                            {flag1=true}
+                                {date2Data.sessions &&
+                                  date2Data.sessions.map((index2) => {
+                                    if (
+                                      index2.center_id === index.center_id &&
+                                      index2.vaccine == index.vaccine
+                                    ) {
+                                      flag1 = true;
+                                      capacity = index2.available_capacity;
+                                    }
+                                  })}
+                                {flag1 === true ? (
+                                  capacity == 0 ? (
+                                    <>
+                                      <strong className="text-danger">
+                                        Booked
+                                      </strong>
+                                    </>
+                                  ) : (
+                                    <>
+                                      {capacity > 10 ? (
+                                        <>
                                           <strong className="text-success">
-                                            {index2.available_capacity} Slots
+                                            {capacity} Slots
                                           </strong>
-                                          </> 
-                                           ) : ( <> <strong className="text-warning">
-                                             {flag1=true}
-                                           {index2.available_capacity} Slots
-                                         </strong></>) }   
-                                          </>
-                                        )
-                                      )
-                                       : 
-                                          flag=false
-                                        // <strong class="text-muted">N/A</strong>
-                                      
-                                    )
-                                   })}
-                                   {console.log(flag1)}
-                                   {flag===false ? <strong className='text-muted'>N/A</strong> : null}
+                                        </>
+                                      ) : (
+                                        <>
+                                          {" "}
+                                          <strong className="text-warning">
+                                            {capacity} Slots
+                                          </strong>
+                                        </>
+                                      )}
+                                    </>
+                                  )
+                                ) : (
+                                  <strong className="text-muted">N/A</strong>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -440,42 +473,45 @@ console.log(dateArr)
                           <div className="card h-100">
                             <div className="card-body d-table">
                               <div className="d-table-cell h-100 align-middle text-center">
-                              {
-                                   date3Data.sessions && date3Data.sessions.map((index3)=>{
-                                    return (
-                                      
-                                       index3.center_id === index.center_id ? 
-                                        (
-                                          index3.available_capacity == 0 ? (
-                                            <>
-                                          {flag=true}
-                                          <strong className="text-danger">Booked</strong>
-                                          </>
-                                        ) : (
-                                          <>
-                                          {index3.available_capacity > 10 ?
-                                          (
-                                            <>
-                                            {flag=true}
+                                {date3Data.sessions &&
+                                  date3Data.sessions.map((index3) => {
+                                    if (
+                                      index3.center_id === index.center_id &&
+                                      index3.vaccine == index.vaccine
+                                    ) {
+                                      flag1 = true;
+                                      capacity = index3.available_capacity;
+                                    }
+                                  })}
+                                {flag1 === true ? (
+                                  capacity == 0 ? (
+                                    <>
+                                      <strong className="text-danger">
+                                        Booked
+                                      </strong>
+                                    </>
+                                  ) : (
+                                    <>
+                                      {capacity > 10 ? (
+                                        <>
                                           <strong className="text-success">
-                                            {index3.available_capacity} Slots
+                                            {capacity} Slots
                                           </strong>
-                                          </> 
-                                           ) : ( <> <strong className="text-warning">
-                                             {flag=true}
-                                           {index3.available_capacity} Slots
-                                         </strong></>) }   
-                                          </>
-                                        )
-                                      )
-                                       : 
-                                       flag=false 
-                                        // <strong class="text-muted">N/A</strong>
-                                      
-                                    )
-                                   })}
-                                   {flag===false ? <strong className="text-muted">N/A</strong> : null}
-                                </div>
+                                        </>
+                                      ) : (
+                                        <>
+                                          {" "}
+                                          <strong className="text-warning">
+                                            {capacity} Slots
+                                          </strong>
+                                        </>
+                                      )}
+                                    </>
+                                  )
+                                ) : (
+                                  <strong className="text-muted">N/A</strong>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
